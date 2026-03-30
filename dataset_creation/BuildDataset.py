@@ -1,3 +1,19 @@
+"""
+Builds a plant disease dataset for the project by combining multiple image sources.
+
+This script:
+1. Reads a manually prepared class-mapping spreadsheet.
+2. Collects matching classes from PlantVillage, PlantDoc, and optional
+   additional datasets.
+3. Splits PlantVillage images into Train, Val, and Test_ID.
+4. Builds an out-of-distribution test set (Test_OOD) and a small Few_Shot set
+   from PlantDoc and optional supplementary datasets.
+5. Optionally copies the files into a new folder structure and writes summary logs.
+
+The script supports a dry-run mode so the dataset structure and counts can be
+checked before any files are copied.
+"""
+
 from __future__ import annotations
 
 import math
@@ -15,7 +31,7 @@ import pandas as pd
 # ============================================================
 
 SEED = 42
-DRY_RUN = True   # <<< CHANGE TO False WHEN READY TO ACTUALLY COPY
+DRY_RUN = True   # If True, no files are copied; the script only reports what it would do.
 VERBOSE = True
 
 ROOT_TARGET = Path(r"C:\Users\MPopi\OneDrive - University of Calgary\Classes\Term 2 - Winter 2026\ENEN 645\Project\Data\PlantLab2RealGeneralization")
@@ -33,12 +49,12 @@ PV_SPLITS = {
 OOD_MAIN_SPLIT = 0.90   # 90% Of out-of-distribution set goes toward testing
 OOD_FEWSHOT_SPLIT = 0.10  # 10% Of out-of-distribution set goes toward few shot application
 
-# image extensions accepted
+# File extensions treated as valid image files during dataset collection.
 IMG_EXTS = {".jpg", ".jpeg", ".png", ".bmp", ".tif", ".tiff", ".webp"}
 
-# Datasets additional to Plant Doc were also used in the target out-of-distribution set
-# This is the min number of samples to consider per class when topping up from other datasets
-# Otherwise, the average count from other classes will be used
+# Additional datasets can be used to supplement the out-of-distribution test set
+# when PlantDoc does not provide enough images for a class.
+# This value defines the minimum target number of OOD samples per class.
 MIN_TARGET_OOD_PER_CLASS = 5
 
 # ============================================================
